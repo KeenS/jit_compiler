@@ -87,6 +87,13 @@ cgen (S.Call fn args) = do
 cgen (S.UnOp op a) =
   cgen $ S.Call ("unary" ++ op) [a]
 
+cgen (S.BinOp "=" (S.Var var) val) = do
+  a <- getvar var
+  cval <- cgen val
+  store a cval
+  return cval
+
+
 cgen (S.BinOp op a b) =
   case Map.lookup op binops of
     Just f -> do
@@ -143,6 +150,13 @@ cgen (S.For ivar start cond step body) = do
   cbr test forloop forexit
   setBlock forexit
   return zero
+
+cgen (S.Let a b c) = do
+  i <- alloca double
+  val <- cgen b
+  store i val
+  assign a i
+  cgen c
 
 liftError :: ExceptT String IO a -> IO a
 liftError = runExceptT >=> either fail return

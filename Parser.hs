@@ -26,7 +26,8 @@ op = do
 binops = [[binary "*"Ex.AssocLeft,
           binary "/" Ex.AssocLeft]
         , [binary "+" Ex.AssocLeft,
-           binary "-" Ex.AssocLeft]]
+           binary "-" Ex.AssocLeft],
+          [binary "=" Ex.AssocLeft]]
 
 int :: Parser Expr
 int = do
@@ -105,6 +106,7 @@ factor = try floating
          <|> try extern
          <|> try function
          <|> try call
+         <|> try letins
          <|> variable
          <|> parens expr
 
@@ -156,3 +158,15 @@ for = do
   body <- expr
   return $ For var start cond step body
   
+
+letins :: Parser Expr
+letins = do
+  reserved "var"
+  defs <- commaSep $ do
+    var <- identifier
+    reservedOp "="
+    val <- expr
+    return (var, val)
+  reserved "in"
+  body <- expr
+  return $ foldr (uncurry Let) body defs

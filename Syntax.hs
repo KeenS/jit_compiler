@@ -15,4 +15,5 @@ data Expr
   | Extern Name [Name]
   | If Expr Expr Expr
   | For Name Expr Expr Expr Expr
+  | Let Name Expr Expr
   deriving (Eq, Ord, Show)
